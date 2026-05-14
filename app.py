@@ -237,7 +237,19 @@ def add_event(titulo, descricao, data_hora, categoria, user_id):
     }).execute()
 
 def delete_event(event_id):
-    supabase.table("eventos").delete().eq("id", event_id).execute()
+    try:
+        res = (
+            supabase.table("eventos")
+            .delete()
+            .eq("id", event_id)
+            .execute()
+        )
+
+        st.success("Evento deletado!")
+        st.write(res)
+
+    except Exception as e:
+        st.error(f"Erro ao deletar: {e}")
 
 
 # ── Auth Screen ───────────────────────────────────────────────────────────────
