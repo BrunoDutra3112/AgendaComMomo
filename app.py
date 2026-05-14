@@ -418,21 +418,100 @@ def main_app():
                     st.success("Evento adicionado! 🎉")
                     st.rerun()
 
-    # ── Eventos ───────────────────────────────────────────────────────────────
-    upcoming, past = load_events()
+   # ── Eventos ───────────────────────────────────────────────
+upcoming, past = load_events()
 
-    st.markdown(
-        '<div class="section-header">📅 Próximos eventos</div>',
-        unsafe_allow_html=True
-    )
+st.markdown(
+    '<div class="section-header">📅 Próximos eventos</div>',
+    unsafe_allow_html=True
+)
 
-    if not upcoming:
+if not upcoming:
 
-        st.info("Nenhum evento agendado. Que tal planejar algo juntos? 💕")
+    st.info("Nenhum evento agendado. Que tal planejar algo juntos? 💕")
 
-    else:
+else:
 
-        for ev in upcoming:
+    for ev in upcoming:
+
+        dt = datetime.fromisoformat(
+            ev["data_hora"]
+        ).astimezone(BR_TZ)
+
+        criador = ev.get("profiles", {})
+
+        criador_nome = (
+            criador.get("nome", "?")
+            if criador
+            else "?"
+        )
+
+        cat_emoji = next(
+            (
+                k.split()[0]
+                for k, v in CATEGORIAS.items()
+                if v == ev.get("categoria")
+            ),
+            "📅"
+        )
+
+        descricao_html = ""
+
+        if ev.get("descricao"):
+            descricao_html = f"""
+<div class="event-meta" style="margin-top:4px">
+📝 {ev['descricao']}
+</div>
+"""
+
+        card_html = f"""
+<div class="event-card">
+
+<div class="event-title">
+{cat_emoji} {ev['titulo']}
+</div>
+
+<div class="event-meta">
+📆 {dt.strftime('%d/%m/%Y às %H:%M')}
+&nbsp;|&nbsp;
+👤 {criador_nome}
+</div>
+
+{descricao_html}
+
+</div>
+"""
+
+        c1, c2 = st.columns([5, 1])
+
+        with c1:
+            st.markdown(card_html, unsafe_allow_html=True)
+
+        with c2:
+
+            if ev.get("user_id") == user.id:
+
+                st.write("")
+                st.write("")
+
+                if st.button(
+                    "🗑️",
+                    key=f"del_{ev['id']}",
+                    help="Deletar evento"
+                ):
+
+                    delete_event(ev["id"])
+                    st.rerun()
+
+    # ── Histórico ─────────────────────────────────────────────────────────────
+    if past:
+
+    with st.expander(
+        f"🕰️ Histórico ({len(past)} eventos)",
+        expanded=False
+    ):
+
+        for ev in past:
 
             dt = datetime.fromisoformat(
                 ev["data_hora"]
@@ -455,14 +534,8 @@ def main_app():
                 "📅"
             )
 
-            with st.container():
-
-                c1, c2 = st.columns([5, 1])
-
-                with c1:
-
-                    st.markdown(f"""
-<div class="event-card">
+            st.markdown(f"""
+<div class="event-card past">
 
 <div class="event-title">
 {cat_emoji} {ev['titulo']}
@@ -474,73 +547,8 @@ def main_app():
 👤 {criador_nome}
 </div>
 
-{"<div class='event-meta' style='margin-top:4px'>📝 " + ev['descricao'] + "</div>" if ev.get('descricao') else ""}
-
 </div>
 """, unsafe_allow_html=True)
-
-                with c2:
-
-                    if ev.get("user_id") == user.id:
-
-                        st.write("")
-                        st.write("")
-
-                        if st.button(
-                            "🗑️",
-                            key=f"del_{ev['id']}",
-                            help="Deletar evento"
-                        ):
-
-                            delete_event(ev["id"])
-                            st.rerun()
-
-    # ── Histórico ─────────────────────────────────────────────────────────────
-    if past:
-
-        with st.expander(
-            f"🕰️ Histórico ({len(past)} eventos)",
-            expanded=False
-        ):
-
-            for ev in past:
-
-                dt = datetime.fromisoformat(
-                    ev["data_hora"]
-                ).astimezone(BR_TZ)
-
-                criador = ev.get("profiles", {})
-
-                criador_nome = (
-                    criador.get("nome", "?")
-                    if criador
-                    else "?"
-                )
-
-                cat_emoji = next(
-                    (
-                        k.split()[0]
-                        for k, v in CATEGORIAS.items()
-                        if v == ev.get("categoria")
-                    ),
-                    "📅"
-                )
-
-                st.markdown(f"""
-                <div class="event-card past">
-
-                    <div class="event-title">
-                        {cat_emoji} {ev['titulo']}
-                    </div>
-
-                    <div class="event-meta">
-                        📆 {dt.strftime('%d/%m/%Y às %H:%M')}
-                        &nbsp;|&nbsp;
-                        👤 {criador_nome}
-                    </div>
-
-                </div>
-                """, unsafe_allow_html=True)
 
 # ── Router ────────────────────────────────────────────────────────────────────
 if get_user():
