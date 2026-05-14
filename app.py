@@ -59,7 +59,7 @@ html, body, [class*="css"] {
 .stApp {
     background: linear-gradient(
         135deg,
-        #000000 0%,
+        #000000 100%,
         #fef9f0 50%,
         #f0f4ff 100%
     );
