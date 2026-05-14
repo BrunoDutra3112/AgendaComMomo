@@ -54,6 +54,7 @@ h1, h2, h3 {
 
 .stApp {
     background: linear-gradient(135deg, #fff5f7 0%, #fef9f0 50%, #f0f4ff 100%);
+    min-height: 100vh;
 }
 
 .main-title {
@@ -87,6 +88,7 @@ h1, h2, h3 {
     font-size: 1.05rem;
     font-weight: 600;
     color: #2d1f2e;
+    margin-bottom: 0.2rem;
 }
 
 .event-meta {
@@ -105,6 +107,7 @@ h1, h2, h3 {
 div[data-testid="stButton"] button {
     border-radius: 12px !important;
     border: none !important;
+    font-weight: 600 !important;
 }
 
 div[data-testid="stForm"] {
@@ -112,6 +115,12 @@ div[data-testid="stForm"] {
     border-radius: 20px;
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(180,80,100,0.08);
+}
+
+.stTextInput input,
+.stTextArea textarea,
+.stSelectbox select {
+    border-radius: 10px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -246,6 +255,7 @@ def delete_event(event_id):
 
 # ── AUTH ───────────────────────────────────────────────────────────────
 def auth_page():
+
     st.markdown(
         '<div class="main-title">Nossa Agenda 💕</div>',
         unsafe_allow_html=True
@@ -258,8 +268,11 @@ def auth_page():
 
     tab_login, tab_cadastro = st.tabs(["Entrar", "Criar conta"])
 
+    # LOGIN
     with tab_login:
+
         with st.form("login_form"):
+
             email = st.text_input("E-mail")
             senha = st.text_input("Senha", type="password")
 
@@ -269,6 +282,7 @@ def auth_page():
             )
 
             if submitted:
+
                 ok, msg = sign_in(email, senha)
 
                 if ok:
@@ -276,8 +290,11 @@ def auth_page():
                 else:
                     st.error(msg)
 
+    # CADASTRO
     with tab_cadastro:
+
         with st.form("signup_form"):
+
             nome = st.text_input("Seu nome")
             email2 = st.text_input("E-mail")
             senha2 = st.text_input("Senha", type="password")
@@ -288,6 +305,7 @@ def auth_page():
             )
 
             if submitted2:
+
                 ok, msg = sign_up(email2, senha2, nome)
 
                 if ok:
@@ -297,12 +315,14 @@ def auth_page():
 
 # ── MAIN ───────────────────────────────────────────────────────────────
 def main_app():
+
     user = get_user()
     nome = st.session_state.get("nome", "você")
 
     col1, col2 = st.columns([4, 1])
 
     with col1:
+
         st.markdown(
             '<div class="main-title">Nossa Agenda 💕</div>',
             unsafe_allow_html=True
@@ -314,6 +334,7 @@ def main_app():
         )
 
     with col2:
+
         st.write("")
         st.write("")
 
@@ -355,9 +376,11 @@ def main_app():
             )
 
             if salvar:
+
                 if not titulo:
                     st.error("Informe um título.")
                 else:
+
                     dt = datetime.combine(data, hora)
                     dt = BR_TZ.localize(dt)
 
@@ -381,9 +404,11 @@ def main_app():
     )
 
     if not upcoming:
+
         st.info("Nenhum evento agendado 💕")
 
     else:
+
         for ev in upcoming:
 
             dt = (
@@ -406,8 +431,22 @@ def main_app():
             c1, c2 = st.columns([5, 1])
 
             with c1:
+
+                # ── DESCRIÇÃO ─────────────────────────
+                descricao_html = ""
+
+                if ev.get("descricao"):
+
+                    descricao_html = f"""
+                    <div class="event-meta" style="margin-top:4px">
+                        📝 {ev['descricao']}
+                    </div>
+                    """
+
+                # ── CARD ──────────────────────────────
                 st.markdown(f"""
                 <div class="event-card">
+
                     <div class="event-title">
                         {cat_emoji} {ev['titulo']}
                     </div>
@@ -418,17 +457,13 @@ def main_app():
                         👤 {criador_nome}
                     </div>
 
-                    {
-                        "<div class='event-meta' style='margin-top:4px'>📝 "
-                        + ev['descricao']
-                        + "</div>"
-                        if ev.get('descricao')
-                        else ""
-                    }
+                    {descricao_html}
+
                 </div>
                 """, unsafe_allow_html=True)
 
             with c2:
+
                 if ev.get("user_id") == user.id:
 
                     st.write("")
@@ -439,6 +474,7 @@ def main_app():
                         key=f"del_{ev['id']}",
                         help="Deletar evento"
                     ):
+
                         delete_event(ev["id"])
                         st.rerun()
 
@@ -470,6 +506,7 @@ def main_app():
 
                 st.markdown(f"""
                 <div class="event-card past">
+
                     <div class="event-title">
                         {cat_emoji} {ev['titulo']}
                     </div>
@@ -479,6 +516,7 @@ def main_app():
                         &nbsp;|&nbsp;
                         👤 {criador_nome}
                     </div>
+
                 </div>
                 """, unsafe_allow_html=True)
 
