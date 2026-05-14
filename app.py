@@ -506,7 +506,7 @@ def main_app():
                         delete_event(ev["id"])
                         st.rerun()
 
-    # ── Histórico ─────────────────────────────────────────────
+       # ── Histórico ─────────────────────────────────────────────
     if past:
 
         with st.expander(
@@ -537,22 +537,24 @@ def main_app():
                     "📅"
                 )
 
-                st.markdown(f"""
-                <div class="event-card past">
+                st.markdown(
+                    f"""
+                    <div class="event-card past">
 
-                    <div class="event-title">
-                        {cat_emoji} {ev['titulo']}
+                        <div class="event-title">
+                            {cat_emoji} {ev['titulo']}
+                        </div>
+
+                        <div class="event-meta">
+                            📆 {dt.strftime('%d/%m/%Y às %H:%M')}
+                            &nbsp;|&nbsp;
+                            👤 {criador_nome}
+                        </div>
+
                     </div>
-
-                    <div class="event-meta">
-                        📆 {dt.strftime('%d/%m/%Y às %H:%M')}
-                        &nbsp;|&nbsp;
-                        👤 {criador_nome}
-                    </div>
-
-                </div>
-                """, unsafe_allow_html=True)
-
+                    """,
+                    unsafe_allow_html=True
+                )
 # ── Router ────────────────────────────────────────────────────────────────────
 if get_user():
     main_app()
