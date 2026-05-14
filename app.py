@@ -462,22 +462,22 @@ def main_app():
                 with c1:
 
                     st.markdown(f"""
-                    <div class="event-card">
+<div class="event-card">
 
-                        <div class="event-title">
-                            {cat_emoji} {ev['titulo']}
-                        </div>
+<div class="event-title">
+{cat_emoji} {ev['titulo']}
+</div>
 
-                        <div class="event-meta">
-                            📆 {dt.strftime('%d/%m/%Y às %H:%M')}
-                            &nbsp;|&nbsp;
-                            👤 {criador_nome}
-                        </div>
+<div class="event-meta">
+📆 {dt.strftime('%d/%m/%Y às %H:%M')}
+&nbsp;|&nbsp;
+👤 {criador_nome}
+</div>
 
-                        {"<div class='event-meta' style='margin-top:4px'>📝 " + ev['descricao'] + "</div>" if ev.get('descricao') else ""}
+{"<div class='event-meta' style='margin-top:4px'>📝 " + ev['descricao'] + "</div>" if ev.get('descricao') else ""}
 
-                    </div>
-                    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
                 with c2:
 
