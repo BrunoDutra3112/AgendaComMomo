@@ -164,15 +164,26 @@ div[data-testid="stForm"] {
 def get_user():
     return st.session_state.get("user")
 
+def ensure_profile(user_id, email, nome=None):
+    """Garante que o perfil existe na tabela profiles. Cria se não existir."""
+    try:
+        profile = supabase.table("profiles").select("*").eq("id", user_id).execute()
+        if not profile.data:
+            supabase.table("profiles").insert({
+                "id": user_id,
+                "nome": nome or email.split("@")[0],
+                "email": email,
+            }).execute()
+            return nome or email.split("@")[0]
+        return profile.data[0]["nome"]
+    except Exception:
+        return nome or email.split("@")[0]
+
 def sign_up(email, password, nome):
     try:
         res = supabase.auth.sign_up({"email": email, "password": password})
         if res.user:
-            supabase.table("profiles").insert({
-                "id": res.user.id,
-                "nome": nome,
-                "email": email,
-            }).execute()
+            ensure_profile(res.user.id, email, nome)
             return True, "Conta criada! Verifique seu e-mail para confirmar."
         return False, "Erro ao criar conta."
     except Exception as e:
@@ -184,8 +195,9 @@ def sign_in(email, password):
         if res.user:
             st.session_state["user"] = res.user
             st.session_state["session"] = res.session
-            profile = supabase.table("profiles").select("*").eq("id", res.user.id).execute()
-            st.session_state["nome"] = profile.data[0]["nome"] if profile.data else email
+            # Garante perfil mesmo que não tenha sido criado no cadastro
+            nome = ensure_profile(res.user.id, email)
+            st.session_state["nome"] = nome
             return True, ""
         return False, "E-mail ou senha incorretos."
     except Exception as e:
@@ -355,3 +367,4 @@ if get_user():
     main_app()
 else:
     auth_page()
+    
