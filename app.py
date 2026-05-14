@@ -42,6 +42,7 @@ CATEGORIAS = {
 # ── CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 html, body, [class*="css"] {
@@ -58,50 +59,52 @@ h1, h2, h3 {
 }
 
 .main-title {
-    font-size: 2.6rem;
+    font-size: 2.8rem;
     text-align: center;
-    color: #b5405a;
+    color: #c13c68;
     margin-bottom: 0.2rem;
 }
 
 .sub-title {
     text-align: center;
-    color: #a07080;
+    color: #9d7482;
     margin-bottom: 2rem;
-}
-
-.event-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.1rem 1.4rem;
-    margin-bottom: 0.8rem;
-    border-left: 4px solid #f48fb1;
-    box-shadow: 0 2px 12px rgba(180,80,100,0.07);
-}
-
-.event-card.past {
-    border-left-color: #ccc;
-    opacity: 0.65;
-}
-
-.event-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #2d1f2e;
-    margin-bottom: 0.2rem;
-}
-
-.event-meta {
-    font-size: 0.82rem;
-    color: #8a6575;
 }
 
 .section-header {
     font-size: 1.4rem;
-    color: #b5405a;
-    margin: 1.5rem 0 0.8rem;
-    border-bottom: 1px solid #f8d7e0;
+    color: #c13c68;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #f3c8d5;
     padding-bottom: 0.4rem;
+}
+
+.event-card {
+    background: white;
+    border-radius: 18px;
+    padding: 1rem 1.3rem;
+    margin-bottom: 1rem;
+    border-left: 5px solid #f48fb1;
+    box-shadow: 0 4px 18px rgba(180,80,100,0.08);
+}
+
+.event-card.past {
+    opacity: 0.7;
+    border-left-color: #bbb;
+}
+
+.event-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #2d1f2e;
+    margin-bottom: 0.3rem;
+}
+
+.event-meta {
+    font-size: 0.84rem;
+    color: #7b5c68;
+    margin-top: 2px;
 }
 
 div[data-testid="stButton"] button {
@@ -122,6 +125,7 @@ div[data-testid="stForm"] {
 .stSelectbox select {
     border-radius: 10px !important;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -130,7 +134,9 @@ def get_user():
     return st.session_state.get("user")
 
 def ensure_profile(user_id, email, nome=None):
+
     try:
+
         profile = (
             supabase.table("profiles")
             .select("*")
@@ -139,6 +145,7 @@ def ensure_profile(user_id, email, nome=None):
         )
 
         if not profile.data:
+
             supabase.table("profiles").insert({
                 "id": user_id,
                 "nome": nome or email.split("@")[0],
@@ -153,14 +160,18 @@ def ensure_profile(user_id, email, nome=None):
         return nome or email.split("@")[0]
 
 def sign_up(email, password, nome):
+
     try:
+
         res = supabase.auth.sign_up({
             "email": email,
             "password": password
         })
 
         if res.user:
+
             ensure_profile(res.user.id, email, nome)
+
             return True, "Conta criada! Verifique seu e-mail."
 
         return False, "Erro ao criar conta."
@@ -169,21 +180,24 @@ def sign_up(email, password, nome):
         return False, str(e)
 
 def sign_in(email, password):
+
     try:
+
         res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
 
         if res.user:
+
             st.session_state["user"] = res.user
             st.session_state["session"] = res.session
 
-            # salva tokens
             st.session_state["access_token"] = res.session.access_token
             st.session_state["refresh_token"] = res.session.refresh_token
 
             nome = ensure_profile(res.user.id, email)
+
             st.session_state["nome"] = nome
 
             return True, ""
@@ -194,6 +208,7 @@ def sign_in(email, password):
         return False, str(e)
 
 def sign_out():
+
     try:
         supabase.auth.sign_out()
     except:
@@ -209,6 +224,7 @@ def sign_out():
         st.session_state.pop(k, None)
 
 def load_events():
+
     now = datetime.now(BR_TZ).isoformat()
 
     upcoming = (
@@ -231,6 +247,7 @@ def load_events():
     return upcoming.data or [], past.data or []
 
 def add_event(titulo, descricao, data_hora, categoria, user_id):
+
     supabase.table("eventos").insert({
         "titulo": titulo,
         "descricao": descricao,
@@ -240,7 +257,9 @@ def add_event(titulo, descricao, data_hora, categoria, user_id):
     }).execute()
 
 def delete_event(event_id):
+
     try:
+
         (
             supabase.table("eventos")
             .delete()
@@ -253,7 +272,7 @@ def delete_event(event_id):
     except Exception as e:
         st.error(f"Erro ao deletar: {e}")
 
-# ── AUTH ───────────────────────────────────────────────────────────────
+# ── AUTH PAGE ──────────────────────────────────────────────────────────
 def auth_page():
 
     st.markdown(
@@ -313,7 +332,7 @@ def auth_page():
                 else:
                     st.error(msg)
 
-# ── MAIN ───────────────────────────────────────────────────────────────
+# ── MAIN APP ───────────────────────────────────────────────────────────
 def main_app():
 
     user = get_user()
@@ -339,10 +358,11 @@ def main_app():
         st.write("")
 
         if st.button("Sair", use_container_width=True):
+
             sign_out()
             st.rerun()
 
-    # ── NOVO EVENTO ───────────────────────────────────────────────
+    # ── NOVO EVENTO ───────────────────────────────────────────
     with st.expander("➕ Adicionar novo evento"):
 
         with st.form("novo_evento"):
@@ -352,12 +372,14 @@ def main_app():
             col_a, col_b = st.columns(2)
 
             with col_a:
+
                 data = st.date_input(
                     "Data *",
                     min_value=date.today()
                 )
 
             with col_b:
+
                 hora = st.time_input("Hora *")
 
             categoria_label = st.selectbox(
@@ -378,7 +400,9 @@ def main_app():
             if salvar:
 
                 if not titulo:
+
                     st.error("Informe um título.")
+
                 else:
 
                     dt = datetime.combine(data, hora)
@@ -395,7 +419,7 @@ def main_app():
                     st.success("Evento adicionado! 🎉")
                     st.rerun()
 
-    # ── EVENTOS ─────────────────────────────────────────────────
+    # ── EVENTOS ───────────────────────────────────────────────
     upcoming, past = load_events()
 
     st.markdown(
@@ -432,19 +456,18 @@ def main_app():
 
             with c1:
 
-                # ── DESCRIÇÃO ─────────────────────────
                 descricao_html = ""
 
                 if ev.get("descricao"):
 
                     descricao_html = f"""
-                    <div class="event-meta" style="margin-top:4px">
+                    <div class="event-meta">
                         📝 {ev['descricao']}
                     </div>
                     """
 
-                # ── CARD ──────────────────────────────
-                st.markdown(f"""
+                # AQUI ESTÁ A CORREÇÃO
+                card_html = f"""
                 <div class="event-card">
 
                     <div class="event-title">
@@ -460,7 +483,9 @@ def main_app():
                     {descricao_html}
 
                 </div>
-                """, unsafe_allow_html=True)
+                """
+
+                st.markdown(card_html, unsafe_allow_html=True)
 
             with c2:
 
@@ -478,7 +503,7 @@ def main_app():
                         delete_event(ev["id"])
                         st.rerun()
 
-    # ── HISTÓRICO ───────────────────────────────────────────────
+    # ── HISTÓRICO ─────────────────────────────────────────────
     if past:
 
         with st.expander(
@@ -504,7 +529,7 @@ def main_app():
                     "📅"
                 )
 
-                st.markdown(f"""
+                past_html = f"""
                 <div class="event-card past">
 
                     <div class="event-title">
@@ -518,7 +543,12 @@ def main_app():
                     </div>
 
                 </div>
-                """, unsafe_allow_html=True)
+                """
+
+                st.markdown(
+                    past_html,
+                    unsafe_allow_html=True
+                )
 
 # ── ROUTER ─────────────────────────────────────────────────────────────
 if get_user():
